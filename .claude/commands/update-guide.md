@@ -1,45 +1,44 @@
 ---
-description: スキル&エージェント機能ガイドの最新情報をWebでクロールし、Artifactページを同じURLに上書き更新する
-allowed-tools: WebSearch, WebFetch, Read, Edit, Write, Artifact
+description: ガイドの最新情報をWebでクロールし、data/guide.json を更新して再ビルドする（データ駆動）
+allowed-tools: WebSearch, WebFetch, Read, Edit, Write, Bash
 ---
 
-# スキル & エージェント機能ガイドの更新（手動トリガー）
+# スキル & エージェント機能ガイドの更新（データ駆動・ローカル手動トリガー）
 
-このコマンドは「最新情報をクロール → ページ再生成 → 同じURLに上書き」を行います。
+このプロジェクトは **データ駆動構成** です。コンテンツは `data/guide.json` が唯一の情報源で、
+`index.html` と `claude-guide/skills-agents-guide.html` は `build/build.mjs` で生成されます。
+**HTML を直接編集しないでください。** 編集するのは `data/guide.json` だけです。
 
-## 対象
-- ソースHTML（永続）: `claude-guide/skills-agents-guide.html`
-- 公開URL（**この同じページを上書き更新する**）: https://claude.ai/code/artifact/d418cf1a-20c0-4fdf-8d9f-7d2aba258314
+## 公開
+- 公開サイト: https://yutaogura-sys.github.io/claude-skills-agents-guide/
+- リポジトリ: https://github.com/yutaogura-sys/claude-skills-agents-guide
 
-## 手順（順番に実行）
+## 手順
 
-1. **最新情報をクロールする**（今日の年月を使うこと）。次を WebSearch:
-   - `Claude Code skills agents new features`
-   - `Claude Code subagents update`
-   - `Claude Code スキル エージェント 新機能`
-   そのうえで公式情報を WebFetch で確認:
+1. `data/guide.json` と `CHANGELOG.md` を Read して現状を把握する。
+2. 最新情報を WebFetch（可能なら WebSearch も）で確認する:
    - https://code.claude.com/docs/en/skills
    - https://claude.com/blog/subagents-in-claude-code
    - https://code.claude.com/docs/en/best-practices
+3. 現在の `guide.json` と比較し「新機能 / 仕様変更 / 廃止・名称変更」を特定する。
+4. `data/guide.json` を Edit で更新する:
+   - 新機能カードは該当 section（`id: skills` / `agents`）の `cards` に追加
+   - 仕様変更・廃止は `body` / `rec` を修正（古い記述は残さない）
+   - JSON として妥当な構造を保つ
+5. 変更があれば `changelog` 配列の先頭に
+   `{"date": "本日(YYYY-MM-DD)", "summary": ["変更点", ...]}` を追加する。
+6. ビルドして検証する（Bash）:
+   ```
+   node build/build.mjs
+   node build/validate.mjs
+   ```
+7. 変更点（追加 / 変更 / 削除）を箇条書きで報告する。実質的な変更が無ければ
+   「内容に変更なし」と明記し、guide.json は変更しない。
 
-2. **差分を洗い出す**。`claude-guide/skills-agents-guide.html` を Read し、現状の記載と比較して
-   「新機能 / 仕様変更 / 廃止・名称変更」を特定する。
-
-3. **HTMLを更新する**（Edit）:
-   - 新機能 → 該当セクション（機能一覧①スキル / ②エージェント）にカードを追加。タグは `skill` か `agent` に合わせる
-   - 仕様変更・廃止 → 本文を修正。古い記述は残さない
-   - `id="updated"` の日付を**今日の日付**に更新
-   - footer 末尾の「◯◯年◯月時点の情報」も今日の日付に更新
-   - 参考リンクに有用な新ソースがあれば footer の一覧に追加
-
-4. **再公開する**。Artifact ツールを呼び、
-   - `file_path` = `claude-guide/skills-agents-guide.html`
-   - `url` = 上記の公開URL ← **必ず指定**。指定しないと新しいURLが発行され、既存ページが更新されない
-   - `favicon` = `🧩`（変えない）
-
-5. **報告する**。追加 / 変更 / 削除した項目を箇条書きで。
-   実質的な変更が無ければ「内容に変更なし。最終更新日のみ更新しました」と明記する。
+## 反映（GitHub Pages へ）
+- 検証が通ったら、PR を作成してマージ（推奨）または main へ commit & push する。
+  push すると GitHub Pages に自動反映されます。
 
 ## 注意
-- 出所が不確かな情報・第三者配布スキルの宣伝は採用しない（公式 anthropic.com / claude.com / code.claude.com を優先）。
-- 不確実な新機能は断定せず「（要確認）」を付すか採用を見送る。
+- 公式ソース（anthropic.com / claude.com / code.claude.com）のみ採用。
+- 出所が不確かな情報・第三者配布スキルの宣伝は採用しない。不確実な新機能は見送る。

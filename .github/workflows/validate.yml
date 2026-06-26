@@ -1,0 +1,43 @@
+name: Validate
+
+# PR ごとに、データから生成したサイトが壊れていないか検証します。
+# 1) data/guide.json から再ビルド  2) コミット済み生成物と一致するか  3) HTML 健全性 + リンク死活
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'data/**'
+      - 'build/**'
+      - 'index.html'
+      - 'claude-guide/**'
+      - '.github/workflows/validate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Rebuild from data
+        run: node build/build.mjs
+
+      - name: Generated files must match committed output
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::index.html / artifact が data/guide.json と一致しません。'node build/build.mjs' を実行してコミットしてください。"
+            git --no-pager diff --stat
+            exit 1
+          fi
+          echo "Generated files are in sync."
+
+      - name: Integrity + link check
+        run: node build/validate.mjs

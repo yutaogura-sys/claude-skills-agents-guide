@@ -1,11 +1,16 @@
 name: Update Guide
 
-# サイトの「最新情報に更新」ボタン（= この画面の Run workflow）から手動実行します。
+# サイトの「最新情報に更新」ボタン（= この画面の Run workflow）から手動実行できます。
+# 毎週月曜 00:00 UTC（= 月曜 09:00 JST）にも自動実行します。
+# 直接 main には push せず、変更は Pull Request として作成します。
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update:
@@ -14,42 +19,58 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Update guide with Claude
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Update content with Claude
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
-            --max-turns 25
+            --max-turns 30
             --allowedTools "Edit,Read,Write,WebFetch,WebSearch,Glob,Grep"
           prompt: |
-            このリポジトリのドキュメントサイトを最新情報で更新します。次の手順で進めてください。
+            data/guide.json だけを更新します。HTML / CSS / JS / build スクリプトは絶対に編集しないでください。
 
-            1. 現状把握: 以下を読む。
-               - index.html（公開サイト本体）
-               - claude-guide/skills-agents-guide.html（Artifact 形式のソース）
-               - .claude/commands/update-guide.md（更新方針）
-            2. 最新情報の取得: WebFetch（可能なら WebSearch も）で次の公式情報を確認する。
+            手順:
+            1. data/guide.json と CHANGELOG.md を読み、現在の内容を把握する。
+            2. 次の公式情報を WebFetch（可能なら WebSearch も）で確認する。
                - https://code.claude.com/docs/en/skills
                - https://claude.com/blog/subagents-in-claude-code
                - https://code.claude.com/docs/en/best-practices
-            3. 差分抽出: 現ページと比較し「新機能 / 仕様変更 / 廃止・名称変更」を特定する。
-            4. 反映: index.html と claude-guide/skills-agents-guide.html の両方に同じ編集を加える。
-               - 新機能は該当カテゴリ（skill / agent タグ）にカードを追加
-               - 変更・廃止は本文を修正（古い記述は残さない）
-               - id="updated" の値を本日の日付（UTC, YYYY-MM-DD 形式）に更新
-               - footer の「◯◯年◯月時点の情報」も本日の日付に更新
-            5. ページの構造・スタイル・スクリプト・「最新情報に更新」ボタンは壊さないこと。編集は最小限かつ正確に。
-            6. 公式ソース（anthropic.com / claude.com / code.claude.com）のみ採用。出所が不確かな情報・第三者スキルの宣伝は採用しない。不確実な新機能は採用を見送る。
-            7. 実質的な変更が無ければ、日付のみ更新する。
+            3. 現在の guide.json と比較し「新機能 / 仕様変更 / 廃止・名称変更」を特定する。
+            4. 該当箇所を data/guide.json 内で更新する。
+               - 新機能カードは該当 section（id: skills / agents）の cards 配列に追加（cat に対応した内容にする）
+               - 仕様変更・廃止は body / rec を修正（古い記述は残さない）
+               - JSON として常に妥当な構造を保つ（カンマ・括弧・クォートを壊さない）
+            5. 変更があった場合のみ、changelog 配列の先頭に
+               {"date": "YYYY-MM-DD"（本日UTC）, "summary": ["変更点1", "変更点2"]} を追加する。
+               summary は簡潔な箇条書き。各項目に出典URLを併記してよい。
+            6. 実質的な変更が無ければ、guide.json も changelog も変更しない（その旨だけ述べる）。
+            7. 採用するのは公式ソース（anthropic.com / claude.com / code.claude.com）のみ。
+               出所が不確かな情報や第三者スキルの宣伝は採用しない。不確実な新機能は見送る。
 
-      - name: Commit and push
-        run: |
-          git config user.name "claude-guide-bot"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "docs: 最新情報でガイドを自動更新"
-            git push
-          fi
+            注意: 編集してよいのは data/guide.json と CHANGELOG.md のみ。
+
+      - name: Rebuild site from data
+        run: node build/build.mjs
+
+      - name: Validate
+        run: node build/validate.mjs
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: auto/update-guide
+          delete-branch: true
+          commit-message: "docs: 最新情報でガイドを更新（自動）"
+          title: "docs: ガイドを最新情報で更新"
+          body: |
+            Claude が公式ドキュメントをクロールして `data/guide.json` を更新し、サイトを再ビルドしました。
+
+            - 変更点は `CHANGELOG.md` とページ上部の「今回の変更点」を参照してください。
+            - このPRをマージすると GitHub Pages に反映されます。
+            - 内容に問題がなければマージ、不要なら close してください。
+          labels: automated

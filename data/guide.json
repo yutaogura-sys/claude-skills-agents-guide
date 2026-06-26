@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "docTitle": "Claude Code スキル & エージェント 機能ガイド",
+    "repo": "yutaogura-sys/claude-skills-agents-guide"
+  },
+  "hero": {
+    "eyebrow": "Claude Code リファレンス",
+    "h1": "スキル &amp; エージェント 機能ガイド",
+    "lede": "「スキル」は作業の<strong>型</strong>、「エージェント」は別働きの<strong>作業員</strong>。2つの役割と、ビジネス（ツール開発・資料作成）でのおすすめの使い方を一覧にまとめました。"
+  },
+  "mentalModel": {
+    "kicker": "まず全体像",
+    "h2": "スキル と エージェント の違い",
+    "sub": "この2つは役割が違います。混同すると「重いのに遅い」使い方になりがちなので、最初にここだけ押さえてください。",
+    "cards": [
+      {
+        "type": "skill",
+        "title": "スキル（Skills）",
+        "gloss": "= やり方の説明書",
+        "intro": "特定の作業手順・知識・書式をまとめたファイル。関連する作業が来るとClaudeが<strong>自動で読み込み</strong>、毎回同じ品質で出力します。",
+        "points": [
+          "出力を一定品質に保つ「型」",
+          "コンテキストは共有（同じ会話の中で実行）",
+          "資料作成・定型業務・社内ルールの標準化に最適"
+        ]
+      },
+      {
+        "type": "agent",
+        "title": "エージェント（Subagents）",
+        "gloss": "= 独立して動く作業員",
+        "intro": "独立したコンテキストで自律的にタスクを実行し、<strong>結果の要約だけ</strong>を本体に返します。「ブラウザの別タブ」のイメージ。",
+        "points": [
+          "並列処理・大量ファイル探索が速い",
+          "本筋の会話を汚さない／第三者視点でレビュー",
+          "トークン消費は大きい（後述）— 使いどころを選ぶ"
+        ]
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "skills",
+      "cat": "skill",
+      "kicker": "機能一覧 ①",
+      "h2": "スキルの主な種類とおすすめ",
+      "sub": "「組み込み（最初から使える）」と「自作（型化する）」の2系統。資料作成は組み込みスキルだけでかなり進みます。",
+      "cards": [
+        {
+          "tag": "組み込み・資料作成",
+          "title": "docx / pptx / xlsx / pdf",
+          "body": "Word・PowerPoint・Excel・PDF の生成と読み取り。「この数字でパワポの提案資料を作って」で実ファイルが出力されます。",
+          "rec": "提案資料・月次レポート・経営会議デッキの自動生成、既存ExcelやPDFからのデータ抽出・整形。"
+        },
+        {
+          "tag": "自作・型化",
+          "title": "カスタムスキル（SKILL.md）",
+          "body": "手順をまとめて <span class=\"path\">.claude/skills/名前/SKILL.md</span> に保存。<code>name</code> と <code>description</code>（200字以内）が必須で、descriptionの精度で自動起動が決まります。",
+          "rec": "「月次レポート型」「料金プラン比較資料型」など、繰り返す作業を1度きれいに作って型化 → チームで同品質に量産。"
+        },
+        {
+          "tag": "自作支援",
+          "title": "skill-creator",
+          "body": "質問に答えていくだけでスキルの雛形を自動で組み立ててくれる、スキル作成用のスキル。",
+          "rec": "最初の1個を作るとき。「いつもやっているこの作業を型にしたい」と相談するところから始める。"
+        },
+        {
+          "tag": "自動化",
+          "title": "schedule（定期実行）",
+          "body": "決まった時刻・周期でタスクを自動実行する仕組み。「毎朝」「毎週月曜」などの定型業務を無人化します。",
+          "rec": "毎朝KPIを集計してSlackへ投稿、週次で競合動向を要約、月末に定型レポートを生成。"
+        },
+        {
+          "tag": "組み込み・共有",
+          "title": "artifact-design / Artifacts",
+          "body": "閲覧・共有できるWebページやダッシュボードを生成（このガイドもArtifactです）。",
+          "rec": "比較表・集計ダッシュボード・社内向け説明資料を、URL1つでチーム共有。"
+        },
+        {
+          "tag": "組み込み・開発",
+          "title": "code-review / verify / TDD ほか",
+          "body": "差分レビュー、動作確認、テスト駆動開発、体系的デバッグなど、ツール開発の品質を支える開発系スキル群。",
+          "rec": "社内ツールを作るとき、実装前に設計、実装後に <code>/code-review</code> で自己点検 → 品質を底上げ。"
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "cat": "agent",
+      "kicker": "機能一覧 ②",
+      "h2": "エージェントの種類と使い方パターン",
+      "sub": "用途別の組み込みエージェントと、効果の高い4つの基本パターン。役割特化の自作エージェントも作れます。",
+      "cards": [
+        {
+          "tag": "組み込み・探索",
+          "title": "Explore（読み取り専用探索）",
+          "body": "大量のファイル・フォルダを横断して調べ、<strong>要約だけ</strong>返す。本体の文脈を汚さずに調査できます。",
+          "rec": "「10ファイル以上を読む」調査。既存コードや大量ドキュメントの実態把握。"
+        },
+        {
+          "tag": "組み込み・設計",
+          "title": "Plan（設計エージェント）",
+          "body": "実装方針を立て、手順・重要ファイル・トレードオフを整理した計画を返します。",
+          "rec": "新しい社内ツールを作る前の設計。いきなり実装せず「設計→実装→テスト」の入口に。"
+        },
+        {
+          "tag": "組み込み・汎用",
+          "title": "general-purpose",
+          "body": "調査・コード検索・複数ステップの作業をまとめて任せられる万能エージェント。",
+          "rec": "「どこにあるか分からないものを探す」「独立した複数作業をまとめて進める」。"
+        },
+        {
+          "tag": "自作・役割特化",
+          "title": "カスタムエージェント",
+          "body": "<span class=\"path\">.claude/agents/名前.md</span> に定義。frontmatterで <code>name</code> <code>description</code> <code>tools</code> <code>model</code> などを指定し、使える道具を絞れます。",
+          "rec": "「レビュー担当」「テスト作成担当」「セキュリティ点検担当」を用意し、本体は司令塔に徹する。"
+        },
+        {
+          "tag": "パターン",
+          "title": "並列リサーチ / パイプライン",
+          "body": "独立した調査を同時並行で。多段作業は「設計→実装→テスト」を段階ごとに別エージェントへ受け渡し。",
+          "rec": "同時実行は3〜5体が目安。「独立作業が3つ以上」なら並列化を検討。",
+          "note": {
+            "k": "使わない場面：",
+            "text": "前段の全結果が必要な逐次作業、同じファイルの同時編集。"
+          }
+        },
+        {
+          "tag": "パターン",
+          "title": "第三者レビュー",
+          "body": "会話履歴の先入観なしに、独立した視点で「要件どおりか」「想定漏れがないか」を点検させる。",
+          "rec": "納品・コミット前の最終チェック。資料なら「依頼内容を満たしているか」の検収役にも。"
+        }
+      ]
+    }
+  ],
+  "recipes": {
+    "kicker": "組み合わせレシピ",
+    "h2": "ビジネス用途別・おすすめの組み立て",
+    "sub": "スキル・エージェント・MCP連携を組み合わせると効果が跳ね上がります。御社の用途を想定した3つの型。",
+    "items": [
+      {
+        "title": "資料作成の量産",
+        "usecase": "提案資料・月次レポート・会議デッキ",
+        "chain": [
+          { "chip": "自作スキル（型）", "style": "teal" },
+          { "sep": "+" },
+          { "chip": "pptx / xlsx", "style": "teal" },
+          { "sep": "+" },
+          { "chip": "MCP（Drive）", "style": "" },
+          { "sep": "→" },
+          { "chip": "schedule で月末自動", "style": "amber" }
+        ]
+      },
+      {
+        "title": "社内ツール開発",
+        "usecase": "業務効率化ツール・社内システム",
+        "chain": [
+          { "chip": "Plan で設計", "style": "amber" },
+          { "sep": "→" },
+          { "chip": "TDD スキルで実装", "style": "teal" },
+          { "sep": "→" },
+          { "chip": "レビュー担当エージェント", "style": "amber" }
+        ]
+      },
+      {
+        "title": "定型業務の自動化",
+        "usecase": "日次集計・問い合わせ対応・議事録",
+        "chain": [
+          { "chip": "MCP（Slack / Gmail）", "style": "" },
+          { "sep": "+" },
+          { "chip": "自作スキル", "style": "teal" },
+          { "sep": "+" },
+          { "chip": "schedule で毎朝実行", "style": "amber" }
+        ]
+      }
+    ]
+  },
+  "reference": {
+    "kicker": "設定クイックリファレンス",
+    "h2": "どこに何を置くか",
+    "sub": "作り始めるときの置き場所と起動方法の早見表。チーム共有は社内リポジトリで配布します。",
+    "headers": ["機能", "置き場所", "必須／主な設定", "起動方法"],
+    "rows": [
+      ["スキル", "<span class=\"path\">.claude/skills/名前/SKILL.md</span>", "<code>name</code>, <code>description</code>（200字以内）", "関連作業で自動、または <code>/名前</code>"],
+      ["サブエージェント", "<span class=\"path\">.claude/agents/名前.md</span>", "<code>name</code>, <code>description</code>（+ <code>tools</code> / <code>model</code>）", "自動委任、または明示指定"],
+      ["スラッシュコマンド", "<span class=\"path\">.claude/commands/名前.md</span>", "手順を記述", "<code>/名前</code>"],
+      ["プロジェクト文脈", "<span class=\"path\">CLAUDE.md</span>", "社内ルール・用語・対象システム", "常時自動読み込み"],
+      ["スキルをエージェント化", "SKILL.md の frontmatter", "<code>context: fork</code> を追加", "スキル内容がそのまま別働きの指示に"]
+    ]
+  },
+  "footer": {
+    "caveat": "<strong>2つの注意点。</strong> ① エージェントの多用は単一セッションの約7倍のトークンを消費します。スキルやツール呼び出しで済む作業には使わず、並列・大量探索で効果が上回るときだけに。 ② 外部配布スキルにはプロンプトインジェクションのリスクがあるため、出所が確かなものだけを使用してください。",
+    "sources": [
+      { "label": "Extend Claude with skills — Claude Code Docs", "url": "https://code.claude.com/docs/en/skills" },
+      { "label": "How and when to use subagents in Claude Code — Anthropic", "url": "https://claude.com/blog/subagents-in-claude-code" },
+      { "label": "Best practices for Claude Code — Claude Code Docs", "url": "https://code.claude.com/docs/en/best-practices" },
+      { "label": "Equipping agents for the real world with Agent Skills — Anthropic", "url": "https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills" },
+      { "label": "Claude機能まとめ：Cowork・Code・エージェント — ビジネス+IT", "url": "https://www.sbbit.jp/article/cont1/185696" }
+    ]
+  },
+  "changelog": [
+    {
+      "date": "2026-06-26",
+      "summary": [
+        "ガイドを公開（スキル／エージェントの機能・おすすめの使い方・組み合わせレシピを掲載）",
+        "検索・カテゴリ絞り込み・ファイルパスのコピー機能を追加",
+        "コンテンツを data/guide.json に分離し、PR方式の自動更新・定期実行・自動検証を整備"
+      ]
+    }
+  ]
+}

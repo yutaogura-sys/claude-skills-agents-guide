@@ -88,6 +88,20 @@
   }
   .sec-sub { margin: 0; color: var(--muted); font-size: 15.5px; max-width: 70ch; }
 
+  /* ---- Changelog callout ---- */
+  .changelog {
+    background: var(--teal-soft);
+    border: 1px solid #CFE4E1;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 0 0 40px;
+  }
+  .changelog .cl-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 6px; flex-wrap: wrap; }
+  .changelog .cl-title { font-size: 11.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--teal-deep); }
+  .changelog .cl-date { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .changelog ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .changelog li { font-size: 14px; color: var(--ink); }
+
   /* ---- Mental model band ---- */
   .compare {
     display: grid;
@@ -319,7 +333,6 @@
       <p class="lede">「スキル」は作業の<strong>型</strong>、「エージェント」は別働きの<strong>作業員</strong>。2つの役割と、ビジネス（ツール開発・資料作成）でのおすすめの使い方を一覧にまとめました。</p>
     </header>
 
-    <!-- ===== Interactive toolbar ===== -->
     <div class="toolbar" role="search">
       <div class="tb-inner">
         <div class="search">
@@ -334,7 +347,7 @@
         <div class="meta">
           <span class="count" id="count" aria-live="polite"></span>
           <span class="updated">最終更新 <b id="updated">2026-06-26</b></span>
-          <a class="update-btn" href="https://github.com/yutaogura-sys/claude-skills-agents-guide/actions/workflows/update-guide.yml" target="_blank" rel="noopener" title="GitHub Actions の実行画面を開きます（リポジトリ参加者が「Run workflow」を押すと更新が実行されます）">
+          <a class="update-btn" href="https://github.com/yutaogura-sys/claude-skills-agents-guide/actions/workflows/update-guide.yml" target="_blank" rel="noopener" title="GitHub Actions の実行画面を開きます（Run workflow で更新案のPRが作成されます）">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path></svg>
             最新情報に更新
           </a>
@@ -344,7 +357,18 @@
 
     <p id="noresults" class="noresults">該当する機能が見つかりません。検索語を変えるか「すべて」に戻してください。</p>
 
-    <!-- ===== Mental model ===== -->
+    <section class="changelog" data-static="1">
+      <div class="cl-head">
+        <span class="cl-title">今回の変更点</span>
+        <span class="cl-date">2026-06-26</span>
+      </div>
+      <ul>
+        <li>ガイドを公開（スキル／エージェントの機能・おすすめの使い方・組み合わせレシピを掲載）</li>
+        <li>検索・カテゴリ絞り込み・ファイルパスのコピー機能を追加</li>
+        <li>コンテンツを data/guide.json に分離し、PR方式の自動更新・定期実行・自動検証を整備</li>
+      </ul>
+    </section>
+
     <section data-static="1">
       <div class="sec-head">
         <span class="sec-kicker">まず全体像</span>
@@ -375,7 +399,6 @@
       </div>
     </section>
 
-    <!-- ===== Skills ===== -->
     <section class="catalog">
       <div class="sec-head">
         <span class="sec-kicker">機能一覧 ①</span>
@@ -453,7 +476,6 @@
       </div>
     </section>
 
-    <!-- ===== Agents ===== -->
     <section class="catalog">
       <div class="sec-head">
         <span class="sec-kicker">機能一覧 ②</span>
@@ -532,7 +554,6 @@
       </div>
     </section>
 
-    <!-- ===== Recipes ===== -->
     <section data-static="1">
       <div class="sec-head">
         <span class="sec-kicker">組み合わせレシピ</span>
@@ -546,12 +567,7 @@
             <h3>資料作成の量産</h3>
             <p class="usecase">提案資料・月次レポート・会議デッキ</p>
           </div>
-          <div class="chain">
-            <span class="chip teal">自作スキル（型）</span><span class="arrow">+</span>
-            <span class="chip teal">pptx / xlsx</span><span class="arrow">+</span>
-            <span class="chip">MCP（Drive）</span><span class="arrow">→</span>
-            <span class="chip amber">schedule で月末自動</span>
-          </div>
+          <div class="chain"><span class="chip teal">自作スキル（型）</span><span class="arrow">+</span><span class="chip teal">pptx / xlsx</span><span class="arrow">+</span><span class="chip">MCP（Drive）</span><span class="arrow">→</span><span class="chip amber">schedule で月末自動</span></div>
         </div>
 
         <div class="recipe">
@@ -559,11 +575,7 @@
             <h3>社内ツール開発</h3>
             <p class="usecase">業務効率化ツール・社内システム</p>
           </div>
-          <div class="chain">
-            <span class="chip amber">Plan で設計</span><span class="arrow">→</span>
-            <span class="chip teal">TDD スキルで実装</span><span class="arrow">→</span>
-            <span class="chip amber">レビュー担当エージェント</span>
-          </div>
+          <div class="chain"><span class="chip amber">Plan で設計</span><span class="arrow">→</span><span class="chip teal">TDD スキルで実装</span><span class="arrow">→</span><span class="chip amber">レビュー担当エージェント</span></div>
         </div>
 
         <div class="recipe">
@@ -571,17 +583,12 @@
             <h3>定型業務の自動化</h3>
             <p class="usecase">日次集計・問い合わせ対応・議事録</p>
           </div>
-          <div class="chain">
-            <span class="chip">MCP（Slack / Gmail）</span><span class="arrow">+</span>
-            <span class="chip teal">自作スキル</span><span class="arrow">+</span>
-            <span class="chip amber">schedule で毎朝実行</span>
-          </div>
+          <div class="chain"><span class="chip">MCP（Slack / Gmail）</span><span class="arrow">+</span><span class="chip teal">自作スキル</span><span class="arrow">+</span><span class="chip amber">schedule で毎朝実行</span></div>
         </div>
 
       </div>
     </section>
 
-    <!-- ===== Quick reference ===== -->
     <section data-static="1">
       <div class="sec-head">
         <span class="sec-kicker">設定クイックリファレンス</span>
@@ -629,7 +636,6 @@
       </div>
     </section>
 
-    <!-- ===== Footer ===== -->
     <footer>
       <div class="caveat">
         <strong>2つの注意点。</strong> ① エージェントの多用は単一セッションの約7倍のトークンを消費します。スキルやツール呼び出しで済む作業には使わず、並列・大量探索で効果が上回るときだけに。 ② 外部配布スキルにはプロンプトインジェクションのリスクがあるため、出所が確かなものだけを使用してください。
@@ -643,7 +649,7 @@
         <li><a href="https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills">Equipping agents for the real world with Agent Skills — Anthropic</a></li>
         <li><a href="https://www.sbbit.jp/article/cont1/185696">Claude機能まとめ：Cowork・Code・エージェント — ビジネス+IT</a></li>
       </ul>
-      <p style="margin:0;color:var(--faint);font-size:12.5px;">Claude Code スキル &amp; エージェント機能ガイド ／ 2026年6月時点の情報に基づく</p>
+      <p style="margin:0;color:var(--faint);font-size:12.5px;">Claude Code スキル &amp; エージェント機能ガイド ／ 2026-06-26 時点の情報</p>
     </footer>
 
   </div>
@@ -680,7 +686,6 @@
       if (vis) shown++;
     });
 
-    // Hide a catalog section whose cards are all filtered out
     catalogSecs.forEach(function (sec) {
       var any = [].slice.call(sec.querySelectorAll('.card')).some(function (c) {
         return c.style.display !== 'none';
@@ -688,7 +693,6 @@
       sec.style.display = any ? '' : 'none';
     });
 
-    // While filtering, focus the view on the feature cards
     staticSecs.forEach(function (sec) { sec.style.display = filtering ? 'none' : ''; });
 
     countEl.textContent = filtering ? shown + ' 件' : cards.length + ' 機能';
@@ -708,7 +712,6 @@
     });
   });
 
-  // Click-to-copy on file paths
   [].slice.call(document.querySelectorAll('.path')).forEach(function (p) {
     var original = p.textContent;
     p.classList.add('copyable');
