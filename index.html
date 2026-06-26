@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Claude Code スキルとエージェントの機能・解説・おすすめの使い方リファレンス">
+<title>Claude Code スキル & エージェント 機能ガイド</title>
+<style>
+  :root {
+    --paper: #F4F6F8;
+    --surface: #FFFFFF;
+    --ink: #16202E;
+    --muted: #59636F;
+    --faint: #8A93A0;
+    --line: #E3E7EC;
+    --line-soft: #EEF1F4;
+    --teal: #0F766E;
+    --teal-deep: #0A5852;
+    --teal-soft: #E2EFED;
+    --amber: #9A6B12;
+    --amber-soft: #FAF1DC;
+    --rust: #A2452A;
+    --rust-soft: #F6E7E0;
+    --good: #2E7048;
+    --shadow: 0 1px 2px rgba(22,32,46,.04), 0 6px 20px rgba(22,32,46,.05);
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Yu Gothic UI", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  .page {
+    font-family: var(--sans);
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 480px at 78% -8%, rgba(15,118,110,.07), transparent 60%),
+      var(--paper);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: .01em;
+    padding: 0 20px 80px;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .narrow { max-width: 760px; }
+
+  /* ---- Header ---- */
+  header.hero {
+    padding: 64px 0 40px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 48px;
+  }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+    margin: 0 0 16px;
+  }
+  h1 {
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.18;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--muted);
+    margin: 0;
+    max-width: 64ch;
+  }
+
+  /* ---- Section scaffolding ---- */
+  section { margin: 0 0 56px; }
+  .sec-head { margin: 0 0 22px; }
+  .sec-kicker {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 8px;
+  }
+  h2 {
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 800;
+    letter-spacing: -.005em;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .sec-sub { margin: 0; color: var(--muted); font-size: 15.5px; max-width: 70ch; }
+
+  /* ---- Mental model band ---- */
+  .compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+  }
+  .mm {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 26px 26px 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .mm::before {
+    content: "";
+    position: absolute; inset: 0 auto 0 0;
+    width: 4px;
+  }
+  .mm.skill::before { background: var(--teal); }
+  .mm.agent::before { background: var(--amber); }
+  .mm h3 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
+  .mm .gloss { font-size: 13px; color: var(--faint); font-family: var(--mono); margin: 0 0 14px; }
+  .mm p { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+  .mm ul { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .mm li { position: relative; padding-left: 22px; font-size: 14.5px; color: var(--ink); }
+  .mm li::before {
+    content: ""; position: absolute; left: 4px; top: 9px;
+    width: 7px; height: 7px; border-radius: 2px;
+  }
+  .mm.skill li::before { background: var(--teal); }
+  .mm.agent li::before { background: var(--amber); }
+
+  /* ---- Card grid ---- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px 22px 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(22,32,46,.05), 0 14px 34px rgba(22,32,46,.09);
+    border-color: #D5DBE2;
+  }
+  .tag {
+    align-self: flex-start;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 13px;
+  }
+  .tag.skill { background: var(--teal-soft); color: var(--teal-deep); }
+  .tag.agent { background: var(--amber-soft); color: var(--amber); }
+  .card h3 { margin: 0 0 9px; font-size: 18px; font-weight: 800; letter-spacing: -.005em; }
+  .card > p { margin: 0 0 14px; color: var(--muted); font-size: 14.5px; }
+  .card .spacer { flex: 1; }
+
+  code, .path {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: #F0F2F5;
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    padding: 1.5px 6px;
+    color: var(--teal-deep);
+    word-break: break-all;
+  }
+
+  .rec {
+    background: var(--amber-soft);
+    border-radius: 10px;
+    padding: 11px 13px;
+    margin-top: 4px;
+  }
+  .rec .lbl {
+    display: block;
+    font-size: 10.5px; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--amber); margin-bottom: 4px;
+  }
+  .rec p { margin: 0; font-size: 13.8px; color: #5A4517; line-height: 1.6; }
+
+  .note {
+    display: flex; gap: 8px; align-items: baseline;
+    margin-top: 12px; font-size: 13px; color: var(--rust);
+  }
+  .note .k { font-weight: 700; white-space: nowrap; }
+
+  /* ---- Recipe rows ---- */
+  .recipes { display: flex; flex-direction: column; gap: 14px; }
+  .recipe {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 20px 22px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .recipe h3 { margin: 0; font-size: 17px; font-weight: 800; }
+  .recipe .usecase { color: var(--muted); font-size: 13px; margin: 5px 0 0; }
+  .chain { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip {
+    font-size: 13px; font-weight: 600;
+    background: #F0F2F5; border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 11px; color: var(--ink);
+  }
+  .chip.teal { background: var(--teal-soft); border-color: #CFE4E1; color: var(--teal-deep); }
+  .chip.amber { background: var(--amber-soft); border-color: #ECDCB5; color: var(--amber); }
+  .arrow { color: var(--faint); font-weight: 700; }
+
+  /* ---- Reference table ---- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+  th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  thead th { background: #F8FAFB; font-size: 12px; letter-spacing: .04em; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+  tbody tr:last-child td { border-bottom: none; }
+  td .path { font-size: 12px; }
+  td .feat { font-weight: 700; }
+
+  /* ---- Footer ---- */
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 28px;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  footer h4 { margin: 0 0 10px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+  footer ul { margin: 0 0 18px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+  footer a { color: var(--teal-deep); text-decoration: none; border-bottom: 1px solid #CFE4E1; }
+  footer a:hover { border-bottom-color: var(--teal-deep); }
+  .caveat { background: var(--rust-soft); border-radius: 10px; padding: 13px 15px; color: #6E3320; font-size: 13.5px; }
+
+  a:focus-visible, .card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 6px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+    .card:hover { transform: none; }
+  }
+  @media (max-width: 560px) {
+    .recipe { grid-template-columns: 1fr; gap: 12px; }
+    header.hero { padding: 44px 0 32px; }
+  }
+
+  /* ---- Interactive toolbar ---- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 30;
+    background: rgba(244,246,248,.92);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    padding: 13px 0; margin: 0 0 40px;
+  }
+  .tb-inner { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .search { position: relative; flex: 1 1 260px; min-width: 0; }
+  .search input {
+    width: 100%; font: inherit; font-size: 15px;
+    padding: 10px 14px 10px 40px;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); color: var(--ink);
+  }
+  .search input::placeholder { color: var(--faint); }
+  .search input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+  .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--faint); }
+  .pills { display: flex; gap: 6px; }
+  .pill {
+    font: inherit; font-size: 13.5px; font-weight: 600;
+    padding: 9px 15px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface);
+    color: var(--muted); cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .pill:hover { border-color: #C9D0D8; color: var(--ink); }
+  .pill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pill.active[data-cat="skill"] { background: var(--teal-deep); border-color: var(--teal-deep); }
+  .pill.active[data-cat="agent"] { background: var(--amber); border-color: var(--amber); }
+  .meta { display: flex; align-items: center; gap: 14px; margin-left: auto; white-space: nowrap; }
+  .count { font-size: 13px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .updated { font-size: 12.5px; color: var(--faint); }
+  .updated b { color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .noresults { display: none; text-align: center; color: var(--muted); padding: 48px 0; font-size: 15px; }
+  .path { position: relative; }
+  .path.copyable { cursor: pointer; }
+  .path.copyable:hover { border-color: var(--teal); color: var(--teal); }
+  .copied {
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: var(--ink); color: #fff; font-family: var(--sans);
+    font-size: 11px; padding: 3px 8px; border-radius: 6px;
+    opacity: 0; transition: opacity .18s, transform .18s; pointer-events: none; white-space: nowrap;
+  }
+  .copied.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (max-width: 560px) {
+    .meta { margin-left: 0; width: 100%; justify-content: space-between; }
+  }
+</style>
+</head>
+<body style="margin:0">
+
+
+<div class="page">
+  <div class="wrap">
+
+    <header class="hero">
+      <p class="eyebrow">Claude Code リファレンス</p>
+      <h1>スキル &amp; エージェント 機能ガイド</h1>
+      <p class="lede">「スキル」は作業の<strong>型</strong>、「エージェント」は別働きの<strong>作業員</strong>。2つの役割と、ビジネス（ツール開発・資料作成）でのおすすめの使い方を一覧にまとめました。</p>
+    </header>
+
+    <!-- ===== Interactive toolbar ===== -->
+    <div class="toolbar" role="search">
+      <div class="tb-inner">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+          <input id="q" type="search" placeholder="機能を検索（例：レポート / レビュー / pptx）" aria-label="機能を検索" autocomplete="off">
+        </div>
+        <div class="pills" role="group" aria-label="カテゴリで絞り込み">
+          <button class="pill active" type="button" data-cat="all" aria-pressed="true">すべて</button>
+          <button class="pill" type="button" data-cat="skill" aria-pressed="false">スキル</button>
+          <button class="pill" type="button" data-cat="agent" aria-pressed="false">エージェント</button>
+        </div>
+        <div class="meta">
+          <span class="count" id="count" aria-live="polite"></span>
+          <span class="updated">最終更新 <b id="updated">2026-06-26</b></span>
+        </div>
+      </div>
+    </div>
+
+    <p id="noresults" class="noresults">該当する機能が見つかりません。検索語を変えるか「すべて」に戻してください。</p>
+
+    <!-- ===== Mental model ===== -->
+    <section data-static="1">
+      <div class="sec-head">
+        <span class="sec-kicker">まず全体像</span>
+        <h2>スキル と エージェント の違い</h2>
+        <p class="sec-sub">この2つは役割が違います。混同すると「重いのに遅い」使い方になりがちなので、最初にここだけ押さえてください。</p>
+      </div>
+      <div class="compare">
+        <div class="mm skill">
+          <h3>スキル（Skills）</h3>
+          <p class="gloss">= やり方の説明書</p>
+          <p>特定の作業手順・知識・書式をまとめたファイル。関連する作業が来るとClaudeが<strong>自動で読み込み</strong>、毎回同じ品質で出力します。</p>
+          <ul>
+            <li>出力を一定品質に保つ「型」</li>
+            <li>コンテキストは共有（同じ会話の中で実行）</li>
+            <li>資料作成・定型業務・社内ルールの標準化に最適</li>
+          </ul>
+        </div>
+        <div class="mm agent">
+          <h3>エージェント（Subagents）</h3>
+          <p class="gloss">= 独立して動く作業員</p>
+          <p>独立したコンテキストで自律的にタスクを実行し、<strong>結果の要約だけ</strong>を本体に返します。「ブラウザの別タブ」のイメージ。</p>
+          <ul>
+            <li>並列処理・大量ファイル探索が速い</li>
+            <li>本筋の会話を汚さない／第三者視点でレビュー</li>
+            <li>トークン消費は大きい（後述）— 使いどころを選ぶ</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Skills ===== -->
+    <section class="catalog">
+      <div class="sec-head">
+        <span class="sec-kicker">機能一覧 ①</span>
+        <h2>スキルの主な種類とおすすめ</h2>
+        <p class="sec-sub">「組み込み（最初から使える）」と「自作（型化する）」の2系統。資料作成は組み込みスキルだけでかなり進みます。</p>
+      </div>
+      <div class="grid">
+
+        <div class="card">
+          <span class="tag skill">組み込み・資料作成</span>
+          <h3>docx / pptx / xlsx / pdf</h3>
+          <p>Word・PowerPoint・Excel・PDF の生成と読み取り。「この数字でパワポの提案資料を作って」で実ファイルが出力されます。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>提案資料・月次レポート・経営会議デッキの自動生成、既存ExcelやPDFからのデータ抽出・整形。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag skill">自作・型化</span>
+          <h3>カスタムスキル（SKILL.md）</h3>
+          <p>手順をまとめて <span class="path">.claude/skills/名前/SKILL.md</span> に保存。<code>name</code> と <code>description</code>（200字以内）が必須で、descriptionの精度で自動起動が決まります。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>「月次レポート型」「料金プラン比較資料型」など、繰り返す作業を1度きれいに作って型化 → チームで同品質に量産。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag skill">自作支援</span>
+          <h3>skill-creator</h3>
+          <p>質問に答えていくだけでスキルの雛形を自動で組み立ててくれる、スキル作成用のスキル。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>最初の1個を作るとき。「いつもやっているこの作業を型にしたい」と相談するところから始める。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag skill">自動化</span>
+          <h3>schedule（定期実行）</h3>
+          <p>決まった時刻・周期でタスクを自動実行する仕組み。「毎朝」「毎週月曜」などの定型業務を無人化します。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>毎朝KPIを集計してSlackへ投稿、週次で競合動向を要約、月末に定型レポートを生成。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag skill">組み込み・共有</span>
+          <h3>artifact-design / Artifacts</h3>
+          <p>閲覧・共有できるWebページやダッシュボードを生成（このガイドもArtifactです）。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>比較表・集計ダッシュボード・社内向け説明資料を、URL1つでチーム共有。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag skill">組み込み・開発</span>
+          <h3>code-review / verify / TDD ほか</h3>
+          <p>差分レビュー、動作確認、テスト駆動開発、体系的デバッグなど、ツール開発の品質を支える開発系スキル群。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>社内ツールを作るとき、実装前に設計、実装後に <code>/code-review</code> で自己点検 → 品質を底上げ。</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Agents ===== -->
+    <section class="catalog">
+      <div class="sec-head">
+        <span class="sec-kicker">機能一覧 ②</span>
+        <h2>エージェントの種類と使い方パターン</h2>
+        <p class="sec-sub">用途別の組み込みエージェントと、効果の高い4つの基本パターン。役割特化の自作エージェントも作れます。</p>
+      </div>
+      <div class="grid">
+
+        <div class="card">
+          <span class="tag agent">組み込み・探索</span>
+          <h3>Explore（読み取り専用探索）</h3>
+          <p>大量のファイル・フォルダを横断して調べ、<strong>要約だけ</strong>返す。本体の文脈を汚さずに調査できます。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>「10ファイル以上を読む」調査。既存コードや大量ドキュメントの実態把握。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag agent">組み込み・設計</span>
+          <h3>Plan（設計エージェント）</h3>
+          <p>実装方針を立て、手順・重要ファイル・トレードオフを整理した計画を返します。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>新しい社内ツールを作る前の設計。いきなり実装せず「設計→実装→テスト」の入口に。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag agent">組み込み・汎用</span>
+          <h3>general-purpose</h3>
+          <p>調査・コード検索・複数ステップの作業をまとめて任せられる万能エージェント。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>「どこにあるか分からないものを探す」「独立した複数作業をまとめて進める」。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag agent">自作・役割特化</span>
+          <h3>カスタムエージェント</h3>
+          <p><span class="path">.claude/agents/名前.md</span> に定義。frontmatterで <code>name</code> <code>description</code> <code>tools</code> <code>model</code> などを指定し、使える道具を絞れます。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>「レビュー担当」「テスト作成担当」「セキュリティ点検担当」を用意し、本体は司令塔に徹する。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag agent">パターン</span>
+          <h3>並列リサーチ / パイプライン</h3>
+          <p>独立した調査を同時並行で。多段作業は「設計→実装→テスト」を段階ごとに別エージェントへ受け渡し。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>同時実行は3〜5体が目安。「独立作業が3つ以上」なら並列化を検討。</p>
+          </div>
+          <div class="note"><span class="k">使わない場面：</span><span>前段の全結果が必要な逐次作業、同じファイルの同時編集。</span></div>
+        </div>
+
+        <div class="card">
+          <span class="tag agent">パターン</span>
+          <h3>第三者レビュー</h3>
+          <p>会話履歴の先入観なしに、独立した視点で「要件どおりか」「想定漏れがないか」を点検させる。</p>
+          <div class="spacer"></div>
+          <div class="rec">
+            <span class="lbl">おすすめの使い方</span>
+            <p>納品・コミット前の最終チェック。資料なら「依頼内容を満たしているか」の検収役にも。</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Recipes ===== -->
+    <section data-static="1">
+      <div class="sec-head">
+        <span class="sec-kicker">組み合わせレシピ</span>
+        <h2>ビジネス用途別・おすすめの組み立て</h2>
+        <p class="sec-sub">スキル・エージェント・MCP連携を組み合わせると効果が跳ね上がります。御社の用途を想定した3つの型。</p>
+      </div>
+      <div class="recipes">
+
+        <div class="recipe">
+          <div>
+            <h3>資料作成の量産</h3>
+            <p class="usecase">提案資料・月次レポート・会議デッキ</p>
+          </div>
+          <div class="chain">
+            <span class="chip teal">自作スキル（型）</span><span class="arrow">+</span>
+            <span class="chip teal">pptx / xlsx</span><span class="arrow">+</span>
+            <span class="chip">MCP（Drive）</span><span class="arrow">→</span>
+            <span class="chip amber">schedule で月末自動</span>
+          </div>
+        </div>
+
+        <div class="recipe">
+          <div>
+            <h3>社内ツール開発</h3>
+            <p class="usecase">業務効率化ツール・社内システム</p>
+          </div>
+          <div class="chain">
+            <span class="chip amber">Plan で設計</span><span class="arrow">→</span>
+            <span class="chip teal">TDD スキルで実装</span><span class="arrow">→</span>
+            <span class="chip amber">レビュー担当エージェント</span>
+          </div>
+        </div>
+
+        <div class="recipe">
+          <div>
+            <h3>定型業務の自動化</h3>
+            <p class="usecase">日次集計・問い合わせ対応・議事録</p>
+          </div>
+          <div class="chain">
+            <span class="chip">MCP（Slack / Gmail）</span><span class="arrow">+</span>
+            <span class="chip teal">自作スキル</span><span class="arrow">+</span>
+            <span class="chip amber">schedule で毎朝実行</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Quick reference ===== -->
+    <section data-static="1">
+      <div class="sec-head">
+        <span class="sec-kicker">設定クイックリファレンス</span>
+        <h2>どこに何を置くか</h2>
+        <p class="sec-sub">作り始めるときの置き場所と起動方法の早見表。チーム共有は社内リポジトリで配布します。</p>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>機能</th><th>置き場所</th><th>必須／主な設定</th><th>起動方法</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="feat">スキル</td>
+              <td><span class="path">.claude/skills/名前/SKILL.md</span></td>
+              <td><code>name</code>, <code>description</code>（200字以内）</td>
+              <td>関連作業で自動、または <code>/名前</code></td>
+            </tr>
+            <tr>
+              <td class="feat">サブエージェント</td>
+              <td><span class="path">.claude/agents/名前.md</span></td>
+              <td><code>name</code>, <code>description</code>（+ <code>tools</code> / <code>model</code>）</td>
+              <td>自動委任、または明示指定</td>
+            </tr>
+            <tr>
+              <td class="feat">スラッシュコマンド</td>
+              <td><span class="path">.claude/commands/名前.md</span></td>
+              <td>手順を記述</td>
+              <td><code>/名前</code></td>
+            </tr>
+            <tr>
+              <td class="feat">プロジェクト文脈</td>
+              <td><span class="path">CLAUDE.md</span></td>
+              <td>社内ルール・用語・対象システム</td>
+              <td>常時自動読み込み</td>
+            </tr>
+            <tr>
+              <td class="feat">スキルをエージェント化</td>
+              <td>SKILL.md の frontmatter</td>
+              <td><code>context: fork</code> を追加</td>
+              <td>スキル内容がそのまま別働きの指示に</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== Footer ===== -->
+    <footer>
+      <div class="caveat">
+        <strong>2つの注意点。</strong> ① エージェントの多用は単一セッションの約7倍のトークンを消費します。スキルやツール呼び出しで済む作業には使わず、並列・大量探索で効果が上回るときだけに。 ② 外部配布スキルにはプロンプトインジェクションのリスクがあるため、出所が確かなものだけを使用してください。
+      </div>
+      <div style="height:22px"></div>
+      <h4>参考</h4>
+      <ul>
+        <li><a href="https://code.claude.com/docs/en/skills">Extend Claude with skills — Claude Code Docs</a></li>
+        <li><a href="https://claude.com/blog/subagents-in-claude-code">How and when to use subagents in Claude Code — Anthropic</a></li>
+        <li><a href="https://code.claude.com/docs/en/best-practices">Best practices for Claude Code — Claude Code Docs</a></li>
+        <li><a href="https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills">Equipping agents for the real world with Agent Skills — Anthropic</a></li>
+        <li><a href="https://www.sbbit.jp/article/cont1/185696">Claude機能まとめ：Cowork・Code・エージェント — ビジネス+IT</a></li>
+      </ul>
+      <p style="margin:0;color:var(--faint);font-size:12.5px;">Claude Code スキル &amp; エージェント機能ガイド ／ 2026年6月時点の情報に基づく</p>
+    </footer>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  var q = document.getElementById('q');
+  var countEl = document.getElementById('count');
+  var noResults = document.getElementById('noresults');
+  var pills = [].slice.call(document.querySelectorAll('.pill'));
+  var cards = [].slice.call(document.querySelectorAll('.catalog .card'));
+  var catalogSecs = [].slice.call(document.querySelectorAll('section.catalog'));
+  var staticSecs = [].slice.call(document.querySelectorAll('section[data-static]'));
+  var cat = 'all';
+
+  function cardCat(card) {
+    var t = card.querySelector('.tag');
+    if (t && t.classList.contains('skill')) return 'skill';
+    if (t && t.classList.contains('agent')) return 'agent';
+    return '';
+  }
+
+  function apply() {
+    var term = (q.value || '').trim().toLowerCase();
+    var filtering = term !== '' || cat !== 'all';
+    var shown = 0;
+
+    cards.forEach(function (card) {
+      var okCat = cat === 'all' || cardCat(card) === cat;
+      var okTerm = !term || card.textContent.toLowerCase().indexOf(term) !== -1;
+      var vis = okCat && okTerm;
+      card.style.display = vis ? '' : 'none';
+      if (vis) shown++;
+    });
+
+    // Hide a catalog section whose cards are all filtered out
+    catalogSecs.forEach(function (sec) {
+      var any = [].slice.call(sec.querySelectorAll('.card')).some(function (c) {
+        return c.style.display !== 'none';
+      });
+      sec.style.display = any ? '' : 'none';
+    });
+
+    // While filtering, focus the view on the feature cards
+    staticSecs.forEach(function (sec) { sec.style.display = filtering ? 'none' : ''; });
+
+    countEl.textContent = filtering ? shown + ' 件' : cards.length + ' 機能';
+    noResults.style.display = shown === 0 ? 'block' : 'none';
+  }
+
+  q.addEventListener('input', apply);
+  pills.forEach(function (p) {
+    p.addEventListener('click', function () {
+      cat = p.getAttribute('data-cat');
+      pills.forEach(function (x) {
+        var on = x === p;
+        x.classList.toggle('active', on);
+        x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      apply();
+    });
+  });
+
+  // Click-to-copy on file paths
+  [].slice.call(document.querySelectorAll('.path')).forEach(function (p) {
+    var original = p.textContent;
+    p.classList.add('copyable');
+    p.setAttribute('title', 'クリックでコピー');
+    p.addEventListener('click', function () {
+      var text = original;
+      var done = function () {
+        var tip = document.createElement('span');
+        tip.className = 'copied';
+        tip.textContent = 'コピーしました';
+        p.appendChild(tip);
+        requestAnimationFrame(function () { tip.classList.add('show'); });
+        setTimeout(function () {
+          tip.classList.remove('show');
+          setTimeout(function () { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 220);
+        }, 1100);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () {});
+      }
+    });
+  });
+
+  apply();
+})();
+</script>
+
+</body>
+</html>
