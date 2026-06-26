@@ -1,0 +1,5 @@
+# docs-watch ワークフローが生成する一時ファイル（コミットしない）
+.github/watch-changed.md
+
+# Node
+node_modules/

@@ -13,6 +13,11 @@ allowed-tools: WebSearch, WebFetch, Read, Edit, Write, Bash
 - 公開サイト: https://yutaogura-sys.github.io/claude-skills-agents-guide/
 - リポジトリ: https://github.com/yutaogura-sys/claude-skills-agents-guide
 
+## いつ実行するか
+- 任意のタイミングで実行可。
+- `watch-docs` ワークフロー（週次・AI不使用）が公式ドキュメントの変化を検知すると、
+  ラベル `docs-update` の Issue で通知します。その通知が来たら本コマンドを実行するのが目安です。
+
 ## 手順
 
 1. `data/guide.json` と `CHANGELOG.md` を Read して現状を把握する。

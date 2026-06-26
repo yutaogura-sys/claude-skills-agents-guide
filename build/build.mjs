@@ -20,7 +20,9 @@ const updated =
   new Date().toISOString().slice(0, 10);
 
 const repo = data.meta.repo;
-const workflowUrl = `https://github.com/${repo}/actions/workflows/update-guide.yml`;
+// 更新は手元の Claude Code で /update-guide を実行する運用。
+// ボタンは「公式docsの更新通知(Issue)」を確認する導線にする。
+const updatesUrl = `https://github.com/${repo}/issues?q=is%3Aissue+is%3Aopen+label%3Adocs-update`;
 
 const STYLE = `<style>
   :root {
@@ -532,9 +534,9 @@ const CONTENT = `<div class="page">
         <div class="meta">
           <span class="count" id="count" aria-live="polite"></span>
           <span class="updated">最終更新 <b id="updated">${updated}</b></span>
-          <a class="update-btn" href="${workflowUrl}" target="_blank" rel="noopener" title="GitHub Actions の実行画面を開きます（Run workflow で更新案のPRが作成されます）">
+          <a class="update-btn" href="${updatesUrl}" target="_blank" rel="noopener" title="公式ドキュメントの更新通知（Issue）を確認します。更新は手元の Claude Code で /update-guide を実行してください。">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path></svg>
-            最新情報に更新
+            更新情報を確認
           </a>
         </div>
       </div>

@@ -1,0 +1,57 @@
+name: Watch Docs
+
+# AIもAPIキーも使わない「更新監視」。GITHUB_TOKEN だけで動きます。
+# 公式ドキュメントの変化を検知し、変わっていたら Issue で「/update-guide を実行してね」と通知します。
+on:
+  schedule:
+    - cron: '0 0 * * 1'   # 毎週月曜 00:00 UTC（= 月曜 09:00 JST）
+  workflow_dispatch:
+
+permissions:
+  contents: write   # ベースライン(lock)の更新コミット用
+  issues: write     # 通知Issueの作成・コメント用
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check official docs for changes
+        id: watch
+        run: node build/watch-docs.mjs
+
+      - name: Notify via issue
+        if: steps.watch.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create docs-update --color FBCA04 --description "公式docsの更新を検知" 2>/dev/null || true
+          existing=$(gh issue list --label docs-update --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file .github/watch-changed.md
+            echo "commented on issue #$existing"
+          else
+            gh issue create \
+              --title "📄 公式ドキュメント更新の検知 — /update-guide で更新を" \
+              --body-file .github/watch-changed.md \
+              --label docs-update
+          fi
+
+      - name: Commit updated baseline
+        run: |
+          git config user.name "docs-watch-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/sources.lock.json
+          if git diff --cached --quiet; then
+            echo "no baseline change"
+          else
+            git commit -m "chore: update docs-watch baseline"
+            git push
+          fi

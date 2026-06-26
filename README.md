@@ -8,7 +8,7 @@ https://yutaogura-sys.github.io/claude-skills-agents-guide/
 
 検索・カテゴリ絞り込み・ファイルパスのワンクリックコピーに対応した操作できるページです。
 
-## 🏗 構成（データ駆動）
+## 🏗 構成（データ駆動・APIキー不要）
 
 コンテンツは **`data/guide.json` が唯一の情報源**。`index.html` 等はそこから自動生成します。
 
@@ -17,12 +17,12 @@ https://yutaogura-sys.github.io/claude-skills-agents-guide/
 | `data/guide.json` | **唯一の情報源**（カード・レシピ・参考・変更履歴など全コンテンツ） |
 | `build/build.mjs` | `guide.json` → `index.html` と Artifact 版を生成。日付の自動刻印・「今回の変更点」描画も担当 |
 | `build/validate.mjs` | JSON妥当性・HTML健全性・カード件数一致・リンク死活を検証 |
-| `index.html` | 公開用ページ（生成物。直接編集しない） |
-| `claude-guide/skills-agents-guide.html` | Claude Artifact 版（生成物） |
-| `CHANGELOG.md` | 変更履歴（生成物） |
-| `.github/workflows/update-guide.yml` | クロール→`guide.json`更新→再ビルド→**PR作成**（手動 + 週次 cron） |
+| `build/watch-docs.mjs` | 公式docsの変化を検知（**AI不使用**・`GITHUB_TOKEN`のみ） |
+| `index.html` / `claude-guide/skills-agents-guide.html` / `CHANGELOG.md` | 生成物（直接編集しない） |
+| `data/sources.lock.json` | 監視のベースライン（生成物） |
 | `.github/workflows/validate.yml` | PR時に再ビルド整合性・健全性を自動検証 |
-| `.claude/commands/update-guide.md` | ローカル手動更新コマンド（`/update-guide`） |
+| `.github/workflows/watch-docs.yml` | 週次で公式docs変化を検知 → Issueで通知 |
+| `.claude/commands/update-guide.md` | ローカル更新コマンド（`/update-guide`） |
 
 ### ビルド
 
@@ -31,25 +31,19 @@ node build/build.mjs      # data/guide.json から生成
 node build/validate.mjs   # 検証
 ```
 
-## 🔄 更新の流れ
+## 🔄 更新の流れ（APIキー不要）
 
-コンテンツを変えるときは **`data/guide.json` を編集 → ビルド → PR** です。HTML は直接編集しません。
+外部APIキーやクラウドでのAI実行は使いません。
 
-### A. Webサイトのボタンから（GitHub Actions）
+1. **監視（自動）**: `watch-docs` が毎週月曜、公式ドキュメントの変化を検知。変わっていれば GitHub Issue（ラベル `docs-update`）で「更新してね」と通知します。`GITHUB_TOKEN` のみで動作し、**中身の自動書き換えはしません**。
+2. **更新（手動・ローカル）**: 手元の Claude Code でこのプロジェクトを開き `/update-guide` を実行 → `data/guide.json` を更新 → `node build/build.mjs && node build/validate.mjs`。
+3. **公開**: PR を作成（`validate.yml` が検証）してマージ、または `main` へ push → GitHub Pages に反映。
 
-公開サイト右上の **「最新情報に更新」** → GitHub Actions の実行画面 → **Run workflow**。
-クラウド上で Claude が公式ドキュメントをクロールして `guide.json` を更新・再ビルドし、**Pull Request を作成**します。レビューしてマージすると Pages に反映されます（毎週月曜にも自動実行）。
+> 公開サイト右上の **「更新情報を確認」** ボタンは、`docs-update` ラベルの Issue 一覧（＝更新が必要かどうか）を開きます。
 
-### B. ローカルから
+## ⚙️ 初期設定
 
-Claude Code でこのプロジェクトを開き `/update-guide` を実行。
-
-## ⚙️ 一度だけの初期設定
-
-1. **APIキー**: リポジトリの *Settings → Secrets and variables → Actions* に `ANTHROPIC_API_KEY` を登録
-   （または `gh secret set ANTHROPIC_API_KEY --repo yutaogura-sys/claude-skills-agents-guide`）
-2. **PR作成の許可**: *Settings → Actions → General → Workflow permissions* で
-   「Allow GitHub Actions to create and approve pull requests」を有効化
+**認証情報（APIキー等）の登録は不要です。** GitHub Actions が通知Issueを作成できるよう、*Settings → Actions → General → Workflow permissions* で書き込み権限を許可してください（このリポジトリは設定済み）。
 
 ---
 
