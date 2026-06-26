@@ -288,6 +288,18 @@
   .count { font-size: 13px; color: var(--faint); font-variant-numeric: tabular-nums; }
   .updated { font-size: 12.5px; color: var(--faint); }
   .updated b { color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .update-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 700; white-space: nowrap;
+    padding: 8px 13px; border-radius: 9px;
+    background: var(--teal); color: #fff; text-decoration: none;
+    border: 1px solid var(--teal-deep);
+    transition: background .15s, transform .1s;
+  }
+  .update-btn:hover { background: var(--teal-deep); }
+  .update-btn:active { transform: translateY(1px); }
+  .update-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .update-btn svg { display: block; }
   .noresults { display: none; text-align: center; color: var(--muted); padding: 48px 0; font-size: 15px; }
   .path { position: relative; }
   .path.copyable { cursor: pointer; }
@@ -332,6 +344,10 @@
         <div class="meta">
           <span class="count" id="count" aria-live="polite"></span>
           <span class="updated">最終更新 <b id="updated">2026-06-26</b></span>
+          <a class="update-btn" href="https://github.com/yutaogura-sys/claude-skills-agents-guide/actions/workflows/update-guide.yml" target="_blank" rel="noopener" title="GitHub Actions の実行画面を開きます（リポジトリ参加者が「Run workflow」を押すと更新が実行されます）">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path></svg>
+            最新情報に更新
+          </a>
         </div>
       </div>
     </div>
