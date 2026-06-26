@@ -1,0 +1,55 @@
+name: Update Guide
+
+# サイトの「最新情報に更新」ボタン（= この画面の Run workflow）から手動実行します。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update guide with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 25
+            --allowedTools "Edit,Read,Write,WebFetch,WebSearch,Glob,Grep"
+          prompt: |
+            このリポジトリのドキュメントサイトを最新情報で更新します。次の手順で進めてください。
+
+            1. 現状把握: 以下を読む。
+               - index.html（公開サイト本体）
+               - claude-guide/skills-agents-guide.html（Artifact 形式のソース）
+               - .claude/commands/update-guide.md（更新方針）
+            2. 最新情報の取得: WebFetch（可能なら WebSearch も）で次の公式情報を確認する。
+               - https://code.claude.com/docs/en/skills
+               - https://claude.com/blog/subagents-in-claude-code
+               - https://code.claude.com/docs/en/best-practices
+            3. 差分抽出: 現ページと比較し「新機能 / 仕様変更 / 廃止・名称変更」を特定する。
+            4. 反映: index.html と claude-guide/skills-agents-guide.html の両方に同じ編集を加える。
+               - 新機能は該当カテゴリ（skill / agent タグ）にカードを追加
+               - 変更・廃止は本文を修正（古い記述は残さない）
+               - id="updated" の値を本日の日付（UTC, YYYY-MM-DD 形式）に更新
+               - footer の「◯◯年◯月時点の情報」も本日の日付に更新
+            5. ページの構造・スタイル・スクリプト・「最新情報に更新」ボタンは壊さないこと。編集は最小限かつ正確に。
+            6. 公式ソース（anthropic.com / claude.com / code.claude.com）のみ採用。出所が不確かな情報・第三者スキルの宣伝は採用しない。不確実な新機能は採用を見送る。
+            7. 実質的な変更が無ければ、日付のみ更新する。
+
+      - name: Commit and push
+        run: |
+          git config user.name "claude-guide-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "docs: 最新情報でガイドを自動更新"
+            git push
+          fi
